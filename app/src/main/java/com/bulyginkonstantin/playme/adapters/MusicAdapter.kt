@@ -8,9 +8,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bulyginkonstantin.playme.R
 import com.bulyginkonstantin.playme.data.Music
 
-class MusicAdapter(var musicList: MutableList<Music>) : RecyclerView.Adapter<MusicAdapter.MusicViewHolder>() {
+class MusicAdapter(private var musicList: MutableList<Music>, private var itemClicked: ItemClicked) : RecyclerView.Adapter<MusicAdapter.MusicViewHolder>() {
 
-    class MusicViewHolder(view: View) : RecyclerView.ViewHolder(view), View.OnClickListener {
+    inner class MusicViewHolder(view: View) : RecyclerView.ViewHolder(view), View.OnClickListener {
 
         private lateinit var music: Music
         private var artistName = view.findViewById<TextView>(R.id.tvArtist)
@@ -27,9 +27,8 @@ class MusicAdapter(var musicList: MutableList<Music>) : RecyclerView.Adapter<Mus
         }
 
         override fun onClick(v: View?) {
-
+            itemClicked.itemClicked(adapterPosition)
         }
-
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MusicViewHolder {

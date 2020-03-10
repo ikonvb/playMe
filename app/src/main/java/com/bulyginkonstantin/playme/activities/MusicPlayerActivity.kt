@@ -1,8 +1,12 @@
 package com.bulyginkonstantin.playme.activities
 
 import android.content.pm.PackageManager
+import android.media.AudioAttributes
+import android.media.MediaPlayer
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
 import android.provider.MediaStore
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -10,15 +14,20 @@ import androidx.core.app.ActivityCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bulyginkonstantin.playme.R
 import com.bulyginkonstantin.playme.adapters.MusicAdapter
+import com.bulyginkonstantin.playme.adapters.ItemClicked
 import com.bulyginkonstantin.playme.data.Music
 import kotlinx.android.synthetic.main.activity_music_player.*
+import java.util.concurrent.TimeUnit
 
 private const val REQUEST_CODE_EXTERNAL_STORAGE = 1
 
-class MusicPlayerActivity : AppCompatActivity() {
+class MusicPlayerActivity : AppCompatActivity(), ItemClicked {
 
     private lateinit var songList: MutableList<Music>
     private lateinit var adapter: MusicAdapter
+    private var currentPosition = 5
+    private var isPlaying = false
+    private var mediaPlayer: MediaPlayer = MediaPlayer()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,9 +36,57 @@ class MusicPlayerActivity : AppCompatActivity() {
 
         if (Build.VERSION.SDK_INT >= 23) {
             checkPermissions()
+            fabPlay.setOnClickListener {
+                play(currentPosition)
+            }
         }
+    }
 
+    private fun play(pos: Int) {
+        if (!isPlaying) {
+            fabPlay.setImageDrawable(resources.getDrawable(R.drawable.ic_stop, null))
+            isPlaying = true
+            mediaPlayer.apply {
+                //setAudioStreamType(AudioManager.STREAM_MUSIC)
+                setAudioAttributes(AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_MEDIA)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                    .build())
+                setDataSource(this@MusicPlayerActivity, Uri.parse(songList[pos].songUri))
+                prepare()
+                start()
+            }
 
+            val handler = Handler()
+            this@MusicPlayerActivity.runOnUiThread(object : Runnable {
+                override fun run() {
+                    val playerPosition  = mediaPlayer.currentPosition / 1000
+                    val totalDuration = mediaPlayer.duration / 1000
+                    seekBar.max = totalDuration
+                    seekBar.progress = playerPosition
+                    handler.postDelayed(this, 1000)
+                    passTv.text = timerFormat(playerPosition.toLong())
+                    remainTv.text = timerFormat((totalDuration - playerPosition).toLong())
+                }
+            })
+        } else {
+            isPlaying = false
+            mediaPlayer.reset()
+            fabPlay.setImageDrawable(resources.getDrawable(R.drawable.ic_play_arrow, null))
+        }
+    }
+
+    private fun timerFormat(time: Long): String {
+
+        var result = String.format("%02d:%02d",
+            TimeUnit.SECONDS.toMinutes(time),
+            TimeUnit.SECONDS.toSeconds(time) - TimeUnit.MINUTES.toSeconds(TimeUnit.SECONDS.toMinutes(time)))
+
+        var convert = ""
+        for (element in result) {
+            convert += element
+        }
+        return convert
     }
 
     private fun checkPermissions() {
@@ -96,8 +153,15 @@ class MusicPlayerActivity : AppCompatActivity() {
             }
         }
         cursor?.close()
-        adapter = MusicAdapter(songList)
+        adapter = MusicAdapter(songList, this)
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = adapter
+    }
+
+    override fun itemClicked(position: Int) {
+        mediaPlayer.reset()
+        isPlaying = false
+        this.currentPosition = position
+        play(currentPosition)
     }
 }

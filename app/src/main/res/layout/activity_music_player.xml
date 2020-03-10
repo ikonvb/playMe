@@ -87,7 +87,7 @@
                 app:srcCompat="@drawable/ic_skip_next" />
 
             <TextView
-                android:id="@+id/pastTv"
+                android:id="@+id/passTv"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
@@ -118,7 +118,7 @@
                 android:layout_marginBottom="16dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/remainTv"
-                app:layout_constraintStart_toEndOf="@+id/pastTv"
+                app:layout_constraintStart_toEndOf="@+id/passTv"
                 app:layout_constraintTop_toBottomOf="@+id/fabPlay" />
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.cardview.widget.CardView>
