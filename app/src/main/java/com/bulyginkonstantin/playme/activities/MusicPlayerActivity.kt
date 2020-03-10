@@ -8,13 +8,15 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.provider.MediaStore
+import android.widget.SeekBar
+import android.widget.SeekBar.*
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bulyginkonstantin.playme.R
-import com.bulyginkonstantin.playme.adapters.MusicAdapter
 import com.bulyginkonstantin.playme.adapters.ItemClicked
+import com.bulyginkonstantin.playme.adapters.MusicAdapter
 import com.bulyginkonstantin.playme.data.Music
 import kotlinx.android.synthetic.main.activity_music_player.*
 import java.util.concurrent.TimeUnit
@@ -39,6 +41,39 @@ class MusicPlayerActivity : AppCompatActivity(), ItemClicked {
             fabPlay.setOnClickListener {
                 play(currentPosition)
             }
+
+            fabNext.setOnClickListener {
+                mediaPlayer.reset()
+                isPlaying = false
+                if (currentPosition < songList.size - 1) {
+                    currentPosition++
+                }
+
+                play(currentPosition)
+            }
+
+            fabPrevious.setOnClickListener {
+                mediaPlayer.reset()
+                isPlaying = false
+                if (currentPosition > 0) {
+                    currentPosition--
+                }
+                play(currentPosition)
+            }
+
+            seekBar.setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
+                override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
+                    if (fromUser) {
+                        mediaPlayer.seekTo(progress * 1000)
+                    }
+                }
+
+                override fun onStartTrackingTouch(seekBar: SeekBar) {
+                }
+
+                override fun onStopTrackingTouch(seekBar: SeekBar) {
+                }
+            })
         }
     }
 
@@ -47,7 +82,6 @@ class MusicPlayerActivity : AppCompatActivity(), ItemClicked {
             fabPlay.setImageDrawable(resources.getDrawable(R.drawable.ic_stop, null))
             isPlaying = true
             mediaPlayer.apply {
-                //setAudioStreamType(AudioManager.STREAM_MUSIC)
                 setAudioAttributes(AudioAttributes.Builder()
                     .setUsage(AudioAttributes.USAGE_MEDIA)
                     .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
